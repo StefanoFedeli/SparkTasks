@@ -12,6 +12,8 @@ services:
       - "SPARK_LOCAL_IP=spark-master"
   spark-worker:
     image: spark-worker:v1.0
+    ports:
+      - "9091:8081"
     depends_on:
       - spark-master
     environment:
@@ -21,5 +23,5 @@ services:
       - SPARK_DRIVER_MEMORY=128m
       - SPARK_EXECUTOR_MEMORY=256m
     volumes:
-       - ./app/task1:/opt/spark-apps
+       - ./app:/opt/spark-apps
        - ./data:/opt/spark-data
