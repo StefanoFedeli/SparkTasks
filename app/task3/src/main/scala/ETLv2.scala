@@ -52,7 +52,7 @@ object ETLv2 {
 
 
     // ACTUAL TASK
-    val expadendLocations: Dataset[String] = cleaned_df.flatMap(row =>  mapToList(row.getInt(3),row.getInt(4)) ).groupBy("key").count().sort(col("count").desc)
+    val expadendLocations: Dataset[String] = cleaned_df.flatMap(row =>  mapToList(row.getInt(3),row.getInt(4)) ).groupBy("_1").count().sort(col("count").desc)
   
     expadendLocations.show(10)
 

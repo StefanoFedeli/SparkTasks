@@ -45,7 +45,7 @@ object ETL {
     val cleaned_df: DataFrame = cropped_df.filter(s"trip_distance > $lowerRange and trip_distance < $upperRange")
 
     //ACTUAL TASK
-    val tupleSet: DataFrame = cleaned_df.withColumn("key", concat(lit("("),col("PULocationID"),lit(","),col("DOLocationID"),lit(")")) ).groupBy("key").count().sort(col("count").desc)//.take(10)
+    val tupleSet: DataFrame = cleaned_df.withColumn("key", concat(lit("("),col("PULocationID"),lit(","),col("DOLocationID"),lit(")")) ).groupBy("key").sum("total_amount").sort(col("sum(total_amount)").desc)//.take(10)
     tupleSet.show(10)
    
 

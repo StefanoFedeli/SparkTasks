@@ -25,6 +25,7 @@ Move to *app* folder and execute the script you prefer.
 ./task<n>.sh
 ```
 Make sure to have the right filenames in the rigth folder.
+Compile each task with *sbt* and then move the just under the task root folder with the name task< n >.jar 
 
 ## Requirements
 - [X]  Every task should be a separate Apache Spark application.

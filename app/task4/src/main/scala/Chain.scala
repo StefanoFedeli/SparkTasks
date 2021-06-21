@@ -19,7 +19,7 @@ object Chain {
     import session.implicits._
 
     val rawData: DataFrame = session.read.option("header","true").option("inferSchema", "true").csv("file:///opt/spark-data/raw/yellow_tripdata_2018-09.csv").sample(0.01)
-    val cropped_df: DataFrame = rawData.drop("VendorID","passenger_count","RatecodeID","store_and_fwd_flag","payment_type","fare_amount","extra","mta_tax","tip_amount","tolls_amount","improvement_surcharge")
+    val cropped_df: DataFrame = rawData.drop("VendorID","passenger_count","RatecodeID","store_and_fwd_flag","payment_type","fare_amount","extra","mta_tax","tip_amount","tolls_amount","improvement_surcharge","total_amount")
     val quantiles = cropped_df.stat.approxQuantile("trip_distance",Array(0.25,0.75),0.0)
     val q1: Double = quantiles(0)
     val q3: Double = quantiles(1)
@@ -28,7 +28,9 @@ object Chain {
     val lowerRange: Double = q1 - 1.5*iqr
     val upperRange: Double = q3 + 1.5*iqr
 
-    val cleaned_df: DataFrame = cropped_df.filter(s"trip_distance > $lowerRange and trip_distance < $upperRange")
+    val cleaned_df: DataFrame = cropped_df.filter(s"trip_distance > $lowerRange and trip_distance < $upperRange").sort(col("tpep_pickup_datetime").asc)
+
+    
 
     sc.stop()
   }
