@@ -19,14 +19,19 @@ class Trip(pickup: LocalDate, dropoff: LocalDate, distance: Float, sourceID: Int
 
 }
 
+/**
+ * ETL object. Contains the logic for the second task
+ * @param args Not used
+ */
 object ETL {
   def main(args: Array[String]) {
 
     val sc: SparkContext = new SparkContext(new SparkConf().setAppName("PreProcessData").setMaster("local[1]").set("spark.executor.memory","1g"))
-    sc.setLogLevel("ALL")
+    //sc.setLogLevel("ALL")
     val session: SparkSession = SparkSession.builder().getOrCreate()
     import session.implicits._
 
+    // OUTLIERS DETECTION WITH IQR METHOD
     val rawData: DataFrame = session.read.option("header","true").option("inferSchema", "true").csv("file:///opt/spark-data/raw/yellow_tripdata_2018-09.csv").sample(0.01)
     val cropped_df: DataFrame = rawData.drop("VendorID","passenger_count","RatecodeID","store_and_fwd_flag","payment_type","fare_amount","extra","mta_tax","tip_amount","tolls_amount","improvement_surcharge")
     val quantiles = cropped_df.stat.approxQuantile("trip_distance",Array(0.25,0.75),0.0)
@@ -38,23 +43,11 @@ object ETL {
     val upperRange: Double = q3 + 1.5*iqr
 
     val cleaned_df: DataFrame = cropped_df.filter(s"trip_distance > $lowerRange and trip_distance < $upperRange")
+
+    //ACTUAL TASK
     val tupleSet: DataFrame = cleaned_df.withColumn("key", concat(lit("("),col("PULocationID"),lit(","),col("DOLocationID"),lit(")")) ).groupBy("key").count().sort(col("count").desc)//.take(10)
     tupleSet.show(10)
-
-
-    /*
-    val pw = new PrintWriter(new File("/opt/spark-data/output/task2.txt"))
-    //pw.write(cropped_df.show(3).toString())
-    pw.write(cropped_df.count().toString())
-    pw.write("\n")
-    pw.write(q1.toString())
-    pw.write("\n")
-    pw.write(iqr.toString())
-    pw.write("\n")
-    pw.write(tupleSet.count().toString())
-    pw.close
-    */
-    
+   
 
     //tupleSet.write.format("csv").save("file:///opt/spark-data/output/tuple")
     //rawData.coalesce(1).write.option("header", "true").csv("file:///opt/spark-data/output/copped")
